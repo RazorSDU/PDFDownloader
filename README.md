@@ -172,9 +172,67 @@ The code checks this file before attempting any new downloads, saving time by sk
 
 ---
 
-## Contributing
-
-Feel free to fork the repository and submit pull requests!  
-If you find bugs or have feature suggestions, please open an issue.
-
+# PDF-Downloader-UI — Effortless bulk PDF retrieval  
+> Multi-threaded downloader with a live Tkinter dashboard.
 ---
+
+## 🛠 Tech Stack & Skills Demonstrated
+| Area | Stack / Library | Highlights shown in this project |
+|------|-----------------|-----------------------------------|
+| Language | Python 3.10+ | Type-hints, f-strings, logging best-practices |
+| Concurrency | `threading`, `concurrent.futures` | Thread-safe queues, graceful cancellation |
+| Data | `pandas`, `openpyxl` | Chunked XLSX streaming to avoid memory spikes |
+| Networking | `requests` | Robust retry logic, HEAD pre-checks, streamed downloads |
+| File I/O | `shutil`, `pathlib` | Disk-space checks, atomic writes |
+| PDFs | `PyPDF2` | Signature validation & structural parsing |
+| GUI | `tkinter`, `ttk` | Live progress bars, dark theme, worker rows |
+| Testing / Dev UX | *dev-mode toggle* | Limit successes for fast iteration |
+| Logging | Custom logger | TRACE/FATAL levels, per-level file handlers |
+
+## ✨ What the App Does
+
+### Core Functionality
+* Reads thousands of report rows from multiple Excel workbooks **in chunks**.  
+* Shuffles and filters rows to skip already-tried records.  
+* Spawns up to *N* worker threads that download PDFs concurrently, first via a primary URL,
+  then a fallback URL.  
+* Writes a **status workbook** (`DownloadedStatus.xlsx`) recording Success / Failure & reason.
+
+### Visuals & UX
+* Real-time dashboard shows:  
+  * Global success / failure counters.  
+  * A row per worker with a status label and animated progress bar.  
+* Dark UI with white text for high contrast.  
+* Automatically closes when all work is done, or on user request.
+
+### Engineering Features
+* **Custom log levels** (`TRACE`, `FATAL`) and single-level file handlers
+  for clean, searchable logs.  
+* Low-memory, chunked Excel reading; safe for 100k+ rows.  
+* Disk-space guard rail (< 5 MB free triggers abort).  
+* Validates `%PDF-` signature **before** writing to disk, then parses with PyPDF2
+  to catch corrupt files immediately.  
+* Decoupled UI communication via a `Queue`, preventing cross-thread GUI calls.
+
+## 🚀 Running Locally
+
+> Prerequisites  
+> * Python 3.10+  
+> * `pipx` or `virtualenv` (recommended)  
+
+```bash
+# 1  Clone
+git clone https://github.com/yourname/pdf-downloader-ui.git
+cd pdf-downloader-ui
+
+# 2  Install deps
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3  Run (dev-mode limits to 10 successes)
+python main.py
+
+# 4  Prod run (remove dev limit, bump workers)
+python main.py --workers 8 --dev-mode false
+
